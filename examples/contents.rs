@@ -16,6 +16,19 @@ async fn main() {
     println!("{resp:?}");
 
     let kernels = client.get_kernels().await.unwrap();
+    println!("{kernels:?}");
+    let resp = kernels.iter().find(|each| each.name == "rust");
+    if resp.is_none() {
+        client
+            .start_kernel(KernelPostRequest {
+                name: "rust".to_string(),
+                path: None,
+            })
+            .await
+            .unwrap();
+    }
+
+    let kernels = client.get_kernels().await.unwrap();
     let resp = kernels.iter().find(|each| each.name == "rust").unwrap();
     let kernsl_cli = resp.kernel_client(&client.base_host, client.secure);
     let resp = kernsl_cli.run_code(":dep tokio".into(), None).await;

@@ -33,7 +33,7 @@ pub struct KernelRequestHeader {
 impl Default for KernelRequestHeader {
     fn default() -> Self {
         KernelRequestHeader {
-            username: Some("jupyter-api-client-rs".to_string()),
+            username: Some("jupyter-client-rs".to_string()),
             session_id: Some(Uuid::new_v4().to_string()),
             message_id: Some(Uuid::new_v4().to_string()),
             message_type: MessageType::ExecuteRequest,

@@ -2,6 +2,12 @@ use super::kernel::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct KernelPostRequest {
+    pub name: String,
+    pub path: Option<String>,
+}
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ContentList {
     pub name: String,

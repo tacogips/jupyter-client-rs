@@ -63,24 +63,28 @@ impl KernelApiClient {
             .await?;
         let timeout = sleep(timeout.unwrap_or(Duration::from_secs(DEFAULT_TIMEOUT_SEC)));
         tokio::pin!(timeout);
-        while !timeout.is_elapsed() {
+        loop {
             tokio::select! {
+                 _ = &mut timeout =>{
+                    log::debug!("timeout.");
+                    return Err(JupyterApiError::KernelMessageTimeout)
+                 },
+
                  Some(receipt_message) = reader.next() =>{
+                    log::debug!("receipt_message: {receipt_message:?}");
                     match receipt_message{
                         Ok(message) =>{
                             let resp: KernelResponse = match message{
                                 Message::Pong(_body) =>{continue},
-                                Message::Text(message) =>{
-
-
-                                    serde_json::from_str(message.as_str())?},
+                                Message::Text(message) =>{serde_json::from_str(message.as_str())?},
                                 Message::Close(_) => return Err(JupyterApiError::KernelConnectionClosed),
                                 Message::Ping(body) =>{
                                     writer.send(Message::Pong(body)).await.ok();
                                     continue
                                 },
-                                other => {
-                                    return Err(JupyterApiError::UnknownKernelMessage(format!("unknown message type {other}")))},
+                                _ => {
+                                    continue
+                                }
                             };
 
                             if let Some(found) = found_fn(resp){
@@ -94,6 +98,5 @@ impl KernelApiClient {
                  },
             }
         }
-        Err(JupyterApiError::KernelMessageTimeout)
     }
 }

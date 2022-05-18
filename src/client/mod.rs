@@ -1,6 +1,6 @@
 mod error;
 pub mod kernel;
-mod types;
+pub mod types;
 
 use error::*;
 
@@ -130,6 +130,21 @@ impl JupyterClient {
             Some(found) => Ok(Some(found.json().await?)),
             None => Ok(None),
         }
+    }
+
+    /// POST /api/kernels
+    pub async fn start_kernel(&self, request: KernelPostRequest) -> Result<()> {
+        let request_builder = with_auth_header! {
+            self.credential,
+            self.req_client.post(format!(
+                "{base_url}/api/kernels",
+                base_url = self.base_url()
+            ))
+        }
+        .json(&request);
+
+        convert_error(request_builder.send().await?).await?;
+        Ok(())
     }
 
     /// GET /api/kernels

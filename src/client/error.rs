@@ -33,9 +33,6 @@ pub enum JupyterApiError {
     #[error("connection closed by kernel")]
     KernelConnectionClosed,
 
-    #[error("unknown kernel message: {0}")]
-    UnknownKernelMessage(String),
-
     #[error("internal server error: {0}")]
     InternalServerError(String),
 }

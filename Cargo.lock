@@ -420,7 +420,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "jupyter-api"
+name = "jupyter-client"
 version = "0.1.0"
 dependencies = [
  "futures",
