@@ -6,7 +6,7 @@ just PoC now
 ## usage
 see [./examples](./examples)
 
-The jupyter lab process starts without token, passowrd and the checking xsrf disabled
+The jupyter lab process should starts without token, passowrd and the checking xsrf disabled
 ```
 jupyter lab --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.disable_check_xsrf=True
 ```
