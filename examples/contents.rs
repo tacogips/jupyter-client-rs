@@ -1,4 +1,4 @@
-use jupyter_api::*;
+use jupyter_client::*;
 
 #[tokio::main]
 async fn main() {

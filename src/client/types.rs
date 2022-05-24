@@ -68,25 +68,52 @@ impl From<Vec<String>> for ContentBody {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Cell {
-    pub cell_type: String,
+    pub cell_type: CellType,
     pub execution_count: Option<Value>,
     pub id: Option<String>,
     pub metadata: Metadata,
     pub outputs: Vec<Output>,
     pub source: String,
 }
-impl From<String> for Cell {
-    fn from(code: String) -> Self {
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum CellType {
+    #[serde(rename = "code")]
+    Code,
+
+    #[serde(rename = "markdown")]
+    Markdown,
+}
+
+impl Cell {
+    pub fn code(code: String) -> Self {
         Self {
-            cell_type: "code".to_string(),
+            cell_type: CellType::Code,
             execution_count: None,
             id: None,
             metadata: Metadata::default(),
             outputs: vec![],
             source: code,
         }
+    }
+
+    pub fn markdown(text: String) -> Self {
+        Self {
+            cell_type: CellType::Code,
+            execution_count: None,
+            id: None,
+            metadata: Metadata::default(),
+            outputs: vec![],
+            source: text,
+        }
+    }
+}
+
+impl From<String> for Cell {
+    fn from(code: String) -> Self {
+        Cell::code(code)
     }
 }
 
