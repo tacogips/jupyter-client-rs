@@ -15,8 +15,8 @@ serde_json = "1.0"
 thiserror = "1.0"
 tokio = {version = "1.18" ,features = ["macros"]}
 tokio-tungstenite = {version = "0.17", features = ["connect","native-tls-vendored"]}
-url = "2.2.2"
-uuid = { version = "1.0.0" ,features = ["v4"]}
+url = "2.2"
+uuid = { version = "1.0" ,features = ["v4"]}
 
 
 [dev-dependencies]

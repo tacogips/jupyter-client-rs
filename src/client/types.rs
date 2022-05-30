@@ -201,8 +201,9 @@ pub struct Kernel {
     pub execution_state: String,
     pub connections: u32,
 }
+
 impl Kernel {
-    pub fn kernel_client(&self, base_host: &str, secure: bool) -> KernelApiClient {
+    pub(crate) fn new_kernel_client(&self, base_host: &str, secure: bool) -> KernelApiClient {
         KernelApiClient::new(base_host, self.id.as_ref(), secure)
     }
 }

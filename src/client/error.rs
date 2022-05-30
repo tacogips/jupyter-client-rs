@@ -9,6 +9,9 @@ pub enum JupyterApiError {
     #[error("url parse error: {0}")]
     UrlParseError(#[from] url::ParseError),
 
+    #[error("invalid jupyter base url: {0}")]
+    InvalidJupyterBaseUrlError(String),
+
     #[error("invalid message type: {0}")]
     InvalieMessageType(String),
 

@@ -6,6 +6,7 @@ use error::*;
 
 use reqwest::{header, Client};
 use types::*;
+use url::Url;
 
 type Result<T> = std::result::Result<T, JupyterApiError>;
 pub enum Credential {
@@ -26,8 +27,7 @@ macro_rules! with_auth_header {
 }
 
 pub struct JupyterClient {
-    pub secure: bool,
-    pub base_host: String,
+    pub base_url: String,
     credential: Option<Credential>,
     req_client: Client,
 }
@@ -35,18 +35,54 @@ pub struct JupyterClient {
 impl Default for JupyterClient {
     fn default() -> JupyterClient {
         JupyterClient {
-            secure: false,
-            base_host: "localhost:8888".to_string(),
+            base_url: "http://localhost:8888".to_string(),
             credential: None,
             req_client: Client::new(),
         }
     }
 }
+
 impl JupyterClient {
-    fn base_url(&self) -> String {
-        let protocol = if self.secure { "https" } else { "http" };
-        format!("{}://{}", protocol, self.base_host)
+    pub fn from_url(
+        base_url: &str,
+        credential: Option<Credential>,
+        req_client: Option<Client>,
+    ) -> Result<Self> {
+        let parsed_base_url = Url::parse(base_url)?;
+
+        let secure = match parsed_base_url.scheme() {
+            "http" => false,
+            "https" => true,
+            protocol => {
+                return Err(JupyterApiError::InvalidJupyterBaseUrlError(format!(
+                    "invalid schema {protocol}"
+                )))
+            }
+        };
+
+        let base_url = if base_url.ends_with("/") {
+            base_url[..base_url.len() - 1].to_string()
+        } else {
+            base_url.to_string()
+        };
+
+        Ok(Self {
+            secure,
+            base_url,
+            credential,
+            req_client: req_client.unwrap_or_default(),
+        })
     }
+
+    pub async fn new_kernel_client(&self) -> Result<Option<ContentList>> {
+        let url_without_protocol = self.base_url.starts_with("https"){
+
+        }else{
+        };
+
+        Kernel::new_kernel_client(self.secure)
+    }
+
     /// GET /api/contents
     pub async fn get_root_contents(&self) -> Result<Option<ContentList>> {
         let request_builder = with_auth_header! {
@@ -54,7 +90,7 @@ impl JupyterClient {
             self.req_client.get(
                 format!(
                 "{base_url}/api/contents",
-                base_url = self.base_url()
+                base_url = self.base_url
             ))
         };
 
@@ -76,7 +112,7 @@ impl JupyterClient {
             self.req_client.get(
                 format!(
                 "{base_url}/api/contents/{path}",
-                base_url = self.base_url()
+                base_url = self.base_url
             ))
         };
 
@@ -97,7 +133,7 @@ impl JupyterClient {
             self.req_client.post(
                 format!(
                 "{base_url}/api/contents/{path}",
-                base_url = self.base_url()
+                base_url = self.base_url
             ))
         }
         .json(&content);
@@ -120,7 +156,7 @@ impl JupyterClient {
             self.req_client.put(
                 format!(
                 "{base_url}/api/contents/{path}",
-                base_url = self.base_url()
+                base_url = self.base_url
             ))
         }
         .json(&content);
@@ -138,7 +174,7 @@ impl JupyterClient {
             self.credential,
             self.req_client.post(format!(
                 "{base_url}/api/kernels",
-                base_url = self.base_url()
+                base_url = self.base_url
             ))
         }
         .json(&request);
@@ -153,7 +189,7 @@ impl JupyterClient {
             self.credential,
             self.req_client.get(format!(
                 "{base_url}/api/kernels",
-                base_url = self.base_url()
+                base_url = self.base_url
             ))
         };
 
@@ -170,7 +206,7 @@ impl JupyterClient {
             self.credential,
             self.req_client.get(format!(
                 "{base_url}/api/sessions",
-                base_url = self.base_url()
+                base_url = self.base_url
             ))
         };
 
@@ -187,7 +223,7 @@ impl JupyterClient {
             self.credential,
             self.req_client.get(format!(
                 "{base_url}/api/sessions/{session_id}",
-                base_url = self.base_url()
+                base_url = self.base_url
             ))
         };
 
