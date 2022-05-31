@@ -29,14 +29,14 @@ async fn main() {
     }
 
     let kernels = client.get_kernels().await.unwrap();
-    let resp = kernels.iter().find(|each| each.name == "rust").unwrap();
-    let kernsl_cli = resp.kernel_client(&client.base_url, client.secure);
-    let resp = kernsl_cli.run_code(":dep tokio".into(), None).await;
-    println!("{resp:?}");
+    let kernel = kernels.iter().find(|each| each.name == "rust").unwrap();
+    let kernsl_cli = client.new_kernel_client(&kernel).unwrap();
+    //let resp = kernsl_cli.run_code(":dep tokio".into(), None).await;
+    //println!("{resp:?}");
 
     let resp = kernsl_cli.run_code("12 * 32".into(), None).await;
     println!("{resp:?}");
 
     let resp = kernsl_cli.run_code("a12 * 23".into(), None).await;
-    println!("{resp:?}");
+    println!("error: {resp:?}");
 }

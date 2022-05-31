@@ -4,6 +4,7 @@ pub mod types;
 
 use error::*;
 
+use kernel::*;
 use reqwest::{header, Client};
 use types::*;
 use url::Url;
@@ -27,7 +28,7 @@ macro_rules! with_auth_header {
 }
 
 pub struct JupyterClient {
-    pub base_url: String,
+    base_url: String,
     credential: Option<Credential>,
     req_client: Client,
 }
@@ -43,23 +44,17 @@ impl Default for JupyterClient {
 }
 
 impl JupyterClient {
-    pub fn from_url(
+    pub fn new(
         base_url: &str,
         credential: Option<Credential>,
         req_client: Option<Client>,
     ) -> Result<Self> {
-        let parsed_base_url = Url::parse(base_url)?;
-
-        let secure = match parsed_base_url.scheme() {
-            "http" => false,
-            "https" => true,
-            protocol => {
-                return Err(JupyterApiError::InvalidJupyterBaseUrlError(format!(
-                    "invalid schema {protocol}"
-                )))
-            }
-        };
-
+        let parsed_url = Url::parse(base_url)?;
+        if parsed_url.scheme() != "http" && parsed_url.scheme() != "https" {
+            return Err(JupyterApiError::InvalidJupyterBaseUrlError(
+                base_url.to_string(),
+            ));
+        }
         let base_url = if base_url.ends_with("/") {
             base_url[..base_url.len() - 1].to_string()
         } else {
@@ -67,20 +62,20 @@ impl JupyterClient {
         };
 
         Ok(Self {
-            secure,
             base_url,
             credential,
             req_client: req_client.unwrap_or_default(),
         })
     }
 
-    pub async fn new_kernel_client(&self) -> Result<Option<ContentList>> {
-        let url_without_protocol = self.base_url.starts_with("https"){
-
-        }else{
+    pub fn new_kernel_client(&self, kernel: &Kernel) -> Result<KernelApiClient> {
+        let (url_without_protocol, secure) = if self.base_url.starts_with("https") {
+            (&self.base_url["https://".len()..self.base_url.len()], true)
+        } else {
+            (&self.base_url["http://".len()..self.base_url.len()], false)
         };
 
-        Kernel::new_kernel_client(self.secure)
+        Ok(kernel.new_kernel_client(url_without_protocol, secure))
     }
 
     /// GET /api/contents

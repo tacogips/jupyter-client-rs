@@ -26,9 +26,9 @@ pub fn find_request_result(message: KernelResponse) -> Option<KernelResponse> {
 }
 
 impl KernelApiClient {
-    pub fn new(base_url: &str, kernel_id: &str, secure: bool) -> Self {
+    pub fn new(url_without_protocol: &str, kernel_id: &str, secure: bool) -> Self {
         let protocol = if secure { "wss" } else { "ws" };
-        let url = format!("{protocol}://{base_url}/api/kernels/{kernel_id}/channels");
+        let url = format!("{protocol}://{url_without_protocol}/api/kernels/{kernel_id}/channels");
         Self { url }
     }
 

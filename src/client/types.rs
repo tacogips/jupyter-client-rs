@@ -203,8 +203,13 @@ pub struct Kernel {
 }
 
 impl Kernel {
-    pub(crate) fn new_kernel_client(&self, base_host: &str, secure: bool) -> KernelApiClient {
-        KernelApiClient::new(base_host, self.id.as_ref(), secure)
+    pub(crate) fn new_kernel_client(
+        &self,
+        url_wihtout_protocol: &str,
+        secure: bool,
+    ) -> KernelApiClient {
+        debug_assert!(!url_wihtout_protocol.ends_with("/"));
+        KernelApiClient::new(url_wihtout_protocol, self.id.as_ref(), secure)
     }
 }
 
