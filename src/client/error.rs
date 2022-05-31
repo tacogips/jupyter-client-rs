@@ -13,7 +13,7 @@ pub enum JupyterApiError {
     InvalidJupyterBaseUrlError(String),
 
     #[error("invalid message type: {0}")]
-    InvalieMessageType(String),
+    InvalidMessageType(String),
 
     #[error("json error: {0}")]
     JsonError(#[from] JsonError),
@@ -26,6 +26,9 @@ pub enum JupyterApiError {
 
     #[error("kernel message timeout ")]
     KernelMessageTimeout,
+
+    #[error("timeout specified kernel response error")]
+    KernelResponseTimeout,
 
     #[error("kernel message error: {0}")]
     KernelMessageError(String),

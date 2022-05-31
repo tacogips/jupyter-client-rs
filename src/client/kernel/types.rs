@@ -8,6 +8,7 @@ use uuid::Uuid;
 #[serde(rename_all = "snake_case")]
 pub enum MessageType {
     KernelInfoRequest,
+    DisplayData,
     ExecuteRequest,
     ExecuteInput,
     ExecuteReply,
@@ -112,6 +113,11 @@ impl KernelResponse {
                 let r = self.as_execute_result_content()?;
                 Ok(r.map(|v| Content::ExecuteResultContent(v)))
             }
+            MessageType::DisplayData => {
+                let r = self.as_display_data_content()?;
+                Ok(r.map(|v| Content::DisplayData(v)))
+            }
+
             MessageType::Error => {
                 let r = self.as_error_content()?;
                 Ok(r.map(|v| Content::ErrorContent(v)))
@@ -120,7 +126,8 @@ impl KernelResponse {
                 let r = self.as_status_content()?;
                 Ok(r.map(|v| Content::StatusContent(v)))
             }
-            typ => Err(JupyterApiError::InvalieMessageType(format!("{:?}", typ))),
+
+            typ => Err(JupyterApiError::InvalidMessageType(format!("{:?}", typ))),
         }
     }
 
@@ -153,6 +160,13 @@ impl KernelResponse {
     }
 
     pub fn as_execute_result_content(&self) -> Result<Option<ExecuteResultContent>, JsonError> {
+        match self.content.clone() {
+            Some(content) => serde_json::from_value(content),
+            None => Ok(None),
+        }
+    }
+
+    pub fn as_display_data_content(&self) -> Result<Option<DisplayDataContent>, JsonError> {
         match self.content.clone() {
             Some(content) => serde_json::from_value(content),
             None => Ok(None),
@@ -202,6 +216,17 @@ pub struct ExecuteResultContent {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DisplayDataContent {
+    pub data: Data,
+    pub metadata: DisplayDataMetadata,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DisplayDataMetadata {
+    needs_background: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StatusContent {
     pub execution_state: String,
 }
@@ -215,6 +240,7 @@ pub struct ErrorContent {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Content {
+    DisplayData(DisplayDataContent),
     ExecuteResultContent(ExecuteResultContent),
     StatusContent(StatusContent),
     ErrorContent(ErrorContent),

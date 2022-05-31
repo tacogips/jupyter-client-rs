@@ -16,7 +16,7 @@ async fn main() {
     println!("{resp:?}");
 
     let kernels = client.get_kernels().await.unwrap();
-    println!("{kernels:?}");
+    println!("kernels:{kernels:?}");
     let resp = kernels.iter().find(|each| each.name == "rust");
     if resp.is_none() {
         client
