@@ -6,7 +6,7 @@ use serde::Serialize;
 use std::pin::Pin;
 use tokio::time::{sleep, Duration, Sleep};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
-use types::*;
+pub use types::*;
 use url;
 
 type Result<T> = std::result::Result<T, JupyterApiError>;
