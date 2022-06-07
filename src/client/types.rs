@@ -130,7 +130,7 @@ pub struct Data {
     #[serde(rename = "text/plain")]
     pub text_plain: Option<String>,
     #[serde(rename = "image/png")]
-    pub image: Option<String>,
+    pub image_png: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
