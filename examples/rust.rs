@@ -15,6 +15,9 @@ async fn main() {
         .unwrap();
     println!("{resp:?}");
 
+    let kernelspecs = client.get_kernelspecs().await.unwrap();
+    println!("kernelspecs :{kernelspecs:?}");
+
     let kernels = client.get_kernels().await.unwrap();
     println!("kernels:{kernels:?}");
     let resp = kernels.iter().find(|each| each.name == "rust");
@@ -29,6 +32,8 @@ async fn main() {
     }
 
     let kernels = client.get_kernels().await.unwrap();
+
+    println!("kernels:{kernels:?}");
     let kernel = kernels.iter().find(|each| each.name == "rust").unwrap();
     let kernsl_cli = client.new_kernel_client(&kernel).unwrap();
     //let resp = kernsl_cli.run_code(":dep tokio".into(), None).await;

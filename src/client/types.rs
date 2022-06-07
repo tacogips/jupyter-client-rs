@@ -1,6 +1,7 @@
 use super::kernel::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KernelPostRequest {
@@ -213,6 +214,39 @@ impl Kernel {
         debug_assert!(!url_wihtout_protocol.ends_with("/"));
         KernelApiClient::new(url_wihtout_protocol, self.id.as_ref(), secure)
     }
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct KernelSpecs {
+    pub default: Option<String>,
+    pub kernelspecs: HashMap<String, KernelSpec>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct KernelSpec {
+    pub name: String,
+    pub spec: KernelSpecSpec,
+    pub resources: Resources,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct KernelSpecSpec {
+    pub argv: Vec<String>,
+    pub display_name: String,
+    pub language: String,
+    pub interrupt_mode: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Resources {
+    #[serde(rename = "kernel.js")]
+    pub kernel_js: Option<String>,
+    #[serde(rename = "logo-64x64")]
+    pub logo_64x64: Option<String>,
+    #[serde(rename = "logo-32x32")]
+    pub logo_32x32: Option<String>,
+    #[serde(rename = "logo-LICENSE")]
+    pub logo_license: Option<String>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]

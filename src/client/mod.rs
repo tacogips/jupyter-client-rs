@@ -1,4 +1,5 @@
 pub mod error;
+
 pub mod kernel;
 pub mod types;
 
@@ -192,6 +193,23 @@ impl JupyterClient {
         match resp {
             Some(found) => Ok(found.json().await?),
             None => Ok(vec![]),
+        }
+    }
+
+    /// GET /api/kernelsspecs
+    pub async fn get_kernelspecs(&self) -> Result<KernelSpecs> {
+        let request_builder = with_auth_header! {
+            self.credential,
+            self.req_client.get(format!(
+                "{base_url}/api/kernelspecs",
+                base_url = self.base_url
+            ))
+        };
+
+        let resp = convert_error(request_builder.send().await?).await?;
+        match resp {
+            Some(found) => Ok(found.json().await?),
+            None => Ok(KernelSpecs::default()),
         }
     }
 
