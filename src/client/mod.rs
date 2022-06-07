@@ -253,3 +253,13 @@ pub async fn convert_error(response: reqwest::Response) -> Result<Option<reqwest
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    const TEST_JUPYTER_URL: &str = "http://localhost:9990";
+    #[test]
+    fn list_kernel_names() {
+        list_kernel_names(_lua: &Lua, jupyter_base_url: String)
+    }
+}

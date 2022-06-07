@@ -1,0 +1,7 @@
+version: "3.9"
+
+services:
+  jupyter:
+    image: tacogips/jupyter-lab-rust:latest
+    ports:
+      - 9990:8888
