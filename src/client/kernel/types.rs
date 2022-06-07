@@ -99,32 +99,32 @@ pub struct KernelResponse {
 }
 
 impl KernelResponse {
-    pub fn as_content(&self) -> Result<Option<Content>, JupyterApiError> {
+    pub fn as_content(&self) -> Result<Option<KernelContent>, JupyterApiError> {
         match &self.msg_type {
             MessageType::ExecuteInput => {
                 let r = self.as_execute_input_content()?;
-                Ok(r.map(|v| Content::ExecuteInputContent(v)))
+                Ok(r.map(|v| KernelContent::ExecuteInputContent(v)))
             }
             MessageType::ExecuteReply => {
                 let r = self.as_execute_reply_content()?;
-                Ok(r.map(|v| Content::ExecuteReplyContent(v)))
+                Ok(r.map(|v| KernelContent::ExecuteReplyContent(v)))
             }
             MessageType::ExecuteResult => {
                 let r = self.as_execute_result_content()?;
-                Ok(r.map(|v| Content::ExecuteResultContent(v)))
+                Ok(r.map(|v| KernelContent::ExecuteResultContent(v)))
             }
             MessageType::DisplayData => {
                 let r = self.as_display_data_content()?;
-                Ok(r.map(|v| Content::DisplayData(v)))
+                Ok(r.map(|v| KernelContent::DisplayData(v)))
             }
 
             MessageType::Error => {
                 let r = self.as_error_content()?;
-                Ok(r.map(|v| Content::ErrorContent(v)))
+                Ok(r.map(|v| KernelContent::ErrorContent(v)))
             }
             MessageType::Status => {
                 let r = self.as_status_content()?;
-                Ok(r.map(|v| Content::StatusContent(v)))
+                Ok(r.map(|v| KernelContent::StatusContent(v)))
             }
 
             typ => Err(JupyterApiError::InvalidMessageType(format!("{:?}", typ))),
@@ -239,7 +239,7 @@ pub struct ErrorContent {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum Content {
+pub enum KernelContent {
     DisplayData(DisplayDataContent),
     ExecuteResultContent(ExecuteResultContent),
     StatusContent(StatusContent),
