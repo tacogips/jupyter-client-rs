@@ -193,6 +193,20 @@ impl JupyterClient {
         Ok(())
     }
 
+    /// DELETE /api/kernels/{kernel_id}
+    pub async fn delete_kernel(&self, kernel_id: &str) -> Result<()> {
+        let request_builder = with_auth_header! {
+            self.credential,
+            self.req_client.delete(format!(
+                "{base_url}/api/kernels/{kernel_id}",
+                base_url = self.base_url
+            ))
+        };
+
+        convert_error(request_builder.send().await?).await?;
+        Ok(())
+    }
+
     /// GET /api/kernels
     pub async fn get_running_kernels(&self) -> Result<Vec<Kernel>> {
         let request_builder = with_auth_header! {

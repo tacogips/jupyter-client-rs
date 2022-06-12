@@ -3,6 +3,7 @@ use jupyter_client::*;
 #[tokio::main]
 async fn main() {
     let client = JupyterClient::default();
+
     let resp = client.get_root_contents().await.unwrap();
 
     println!("{resp:?}");
