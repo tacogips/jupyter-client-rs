@@ -23,13 +23,14 @@ async fn main() {
     println!("kernels:{kernels:?}");
     let resp = kernels.iter().find(|each| each.name == "rust");
     if resp.is_none() {
-        client
+        let result = client
             .start_kernel(KernelPostRequest {
                 name: "rust".to_string(),
                 path: None,
             })
             .await
             .unwrap();
+        println!("---{:?}", result);
     }
 
     let kernels = client.get_running_kernels().await.unwrap();

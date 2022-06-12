@@ -165,7 +165,7 @@ impl JupyterClient {
     }
 
     /// POST /api/kernels
-    pub async fn start_kernel(&self, request: KernelPostRequest) -> Result<()> {
+    pub async fn start_kernel(&self, request: KernelPostRequest) -> Result<Kernel> {
         let request_builder = with_auth_header! {
             self.credential,
             self.req_client.post(format!(
@@ -175,8 +175,11 @@ impl JupyterClient {
         }
         .json(&request);
 
-        convert_error(request_builder.send().await?).await?;
-        Ok(())
+        let resp = convert_error(request_builder.send().await?).await?;
+        match resp {
+            Some(found) => Ok(found.json().await?),
+            None => Err(JupyterApiError::EmptyResponse),
+        }
     }
 
     /// POST /api/kernels/{kernel_id}/interrupt

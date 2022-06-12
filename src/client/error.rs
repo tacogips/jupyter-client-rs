@@ -38,4 +38,7 @@ pub enum JupyterApiError {
 
     #[error("internal server error: {0}")]
     InternalServerError(String),
+
+    #[error("empty response")]
+    EmptyResponse,
 }
