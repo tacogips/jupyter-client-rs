@@ -15,10 +15,10 @@ async fn main() {
         .unwrap();
     println!("{resp:?}");
 
-    let kernelspecs = client.get_kernelspecs().await.unwrap();
+    let kernelspecs = client.get_kernel_specs().await.unwrap();
     println!("kernelspecs :{kernelspecs:?}");
 
-    let kernels = client.get_kernels().await.unwrap();
+    let kernels = client.get_running_kernels().await.unwrap();
     println!("kernels:{kernels:?}");
     let resp = kernels.iter().find(|each| each.name == "rust");
     if resp.is_none() {
@@ -31,7 +31,7 @@ async fn main() {
             .unwrap();
     }
 
-    let kernels = client.get_kernels().await.unwrap();
+    let kernels = client.get_running_kernels().await.unwrap();
 
     println!("kernels:{kernels:?}");
     let kernel = kernels.iter().find(|each| each.name == "rust").unwrap();

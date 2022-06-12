@@ -179,8 +179,22 @@ impl JupyterClient {
         Ok(())
     }
 
+    /// POST /api/kernels/{kernel_id}/interrupt
+    pub async fn interrupt_kernel(&self, kernel_id: &str) -> Result<()> {
+        let request_builder = with_auth_header! {
+            self.credential,
+            self.req_client.post(format!(
+                "{base_url}/api/kernels/{kernel_id}/interrupt",
+                base_url = self.base_url
+            ))
+        };
+
+        convert_error(request_builder.send().await?).await?;
+        Ok(())
+    }
+
     /// GET /api/kernels
-    pub async fn get_kernels(&self) -> Result<Vec<Kernel>> {
+    pub async fn get_running_kernels(&self) -> Result<Vec<Kernel>> {
         let request_builder = with_auth_header! {
             self.credential,
             self.req_client.get(format!(
@@ -197,7 +211,7 @@ impl JupyterClient {
     }
 
     /// GET /api/kernelsspecs
-    pub async fn get_kernelspecs(&self) -> Result<KernelSpecs> {
+    pub async fn get_kernel_specs(&self) -> Result<KernelSpecs> {
         let request_builder = with_auth_header! {
             self.credential,
             self.req_client.get(format!(
@@ -272,12 +286,53 @@ pub async fn convert_error(response: reqwest::Response) -> Result<Option<reqwest
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "test_with_jupyter"))]
 mod test {
     use super::*;
+    use serial_test::serial;
     const TEST_JUPYTER_URL: &str = "http://localhost:9990";
-    #[test]
-    fn list_kernel_names() {
-        list_kernel_names(_lua: &Lua, jupyter_base_url: String)
+
+    #[tokio::test]
+    #[serial]
+    async fn list_kernel_names() {
+        let client = JupyterClient::new(TEST_JUPYTER_URL, None, None).unwrap();
+        let result = client.get_kernel_specs().await.unwrap();
+        assert_eq!(result.kernelspecs.len(), 2);
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn run_cmd() {
+        let client = JupyterClient::new(TEST_JUPYTER_URL, None, None).unwrap();
+        let result = client.get_running_kernels().await.unwrap();
+        if result.is_empty() {
+            for each in result {
+                client.interrupt_kernel(&each.id).await.unwrap();
+            }
+        }
+
+        let result = client.get_kernel_specs().await.unwrap();
+        let rust = result.kernelspecs.get("rust").unwrap();
+        let start_req = KernelPostRequest {
+            name: rust.name.to_string(),
+            path: None,
+        };
+        client.start_kernel(start_req).await.unwrap();
+
+        let kernels = client.get_running_kernels().await.unwrap();
+        let kernel = kernels.iter().find(|each| each.name == "rust").unwrap();
+        let kernsl_cli = client.new_kernel_client(&kernel).unwrap();
+
+        let resp = kernsl_cli.run_code("12 * 32".into(), None).await.unwrap();
+        let contents = resp.as_content().unwrap();
+        if let Some(KernelContent::ExecuteResultContent(content)) = contents {
+            let expected = Data {
+                text_plain: Some("384".to_string()),
+                image_png: None,
+            };
+            assert_eq!(content.data, expected);
+        } else {
+            assert!(false);
+        }
     }
 }

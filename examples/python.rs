@@ -15,7 +15,7 @@ async fn main() {
         .unwrap();
     println!("{resp:?}");
 
-    let kernels = client.get_kernels().await.unwrap();
+    let kernels = client.get_running_kernels().await.unwrap();
     println!("kernels:{kernels:?}");
     let resp = kernels.iter().find(|each| each.name == "python3");
     if resp.is_none() {
@@ -28,7 +28,7 @@ async fn main() {
             .unwrap();
     }
 
-    let kernels = client.get_kernels().await.unwrap();
+    let kernels = client.get_running_kernels().await.unwrap();
     let kernel = kernels.iter().find(|each| each.name == "python3").unwrap();
     let kernsl_cli = client.new_kernel_client(&kernel).unwrap();
 

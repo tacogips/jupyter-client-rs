@@ -48,7 +48,7 @@ impl WaitResult for WaitResultAndDisplayData {
                     Duration::from_millis(DEFAULT_WAIT_SUCCESSION_RESULT_MILLI_SEC),
                 )))
             }
-            MessageType::DisplayData | MessageType::ExecuteReply | MessageType::Error => {
+            MessageType::DisplayData | MessageType::Error => {
                 Some(WaitResultResponse::KernelResponse(message))
             }
             _ => None,

@@ -13,3 +13,4 @@ test-jupyter-up:
 .PHONY: cargo-test
 cargo-test:
 	  cargo nextest run ${TEST_FILTER} --features=test_with_jupyter
+
