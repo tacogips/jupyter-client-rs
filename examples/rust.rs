@@ -35,7 +35,6 @@ async fn main() {
 
     let kernels = client.get_running_kernels().await.unwrap();
 
-    println!("kernels:{kernels:?}");
     let kernel = kernels.iter().find(|each| each.name == "rust").unwrap();
     let kernsl_cli = client.new_kernel_client(&kernel).unwrap();
     let resp = kernsl_cli.run_code(":dep tokio".into(), None).await;
@@ -48,5 +47,25 @@ async fn main() {
     println!("error: {resp:?}");
 
     let resp = kernsl_cli.run_code("".into(), None).await;
+    println!("{resp:?}");
+
+    let resp = kernsl_cli
+        .run_code(
+            r#"fn some(){
+
+        println!("some")
+
+    }"#
+            .into(),
+            None,
+        )
+        .await;
+    println!("{resp:?}");
+
+    let resp = kernsl_cli
+        .run_code(r#" fn some(){println!("aaaa")} "#.into(), None)
+        .await;
+    println!("{resp:?}");
+    let resp = kernsl_cli.run_code(r#" some();    "#.into(), None).await;
     println!("{resp:?}");
 }

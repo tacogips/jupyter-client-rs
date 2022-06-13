@@ -41,5 +41,5 @@ async fn main() {
             None,
         )
         .await;
-    println!("--- {:?}", resp.unwrap().as_content());
+    println!("--- {:?}", resp.unwrap());
 }

@@ -7,6 +7,7 @@ use uuid::Uuid;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MessageType {
+    Stream,
     KernelInfoRequest,
     DisplayData,
     ExecuteRequest,
@@ -87,6 +88,12 @@ impl From<&str> for KernelCodeRequest {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum CompositeKernelResponses {
+    SingleResponse(KernelResponse),
+    MultipleResponse(Vec<KernelResponse>),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct KernelResponse {
     pub header: Header,
     pub msg_id: String,
@@ -127,6 +134,11 @@ impl KernelResponse {
                 Ok(r.map(|v| KernelContent::StatusContent(v)))
             }
 
+            MessageType::Stream => {
+                let r = self.as_stream_content()?;
+                Ok(r.map(|v| KernelContent::StreamContent(v)))
+            }
+
             typ => Err(JupyterApiError::InvalidMessageType(format!("{:?}", typ))),
         }
     }
@@ -153,6 +165,13 @@ impl KernelResponse {
     }
 
     pub fn as_status_content(&self) -> Result<Option<StatusContent>, JsonError> {
+        match self.content.clone() {
+            Some(content) => serde_json::from_value(content),
+            None => Ok(None),
+        }
+    }
+
+    pub fn as_stream_content(&self) -> Result<Option<StreamContent>, JsonError> {
         match self.content.clone() {
             Some(content) => serde_json::from_value(content),
             None => Ok(None),
@@ -232,6 +251,12 @@ pub struct StatusContent {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StreamContent {
+    pub name: String,
+    pub text: String,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ErrorContent {
     pub ename: String,
     pub evalue: String,
@@ -243,6 +268,7 @@ pub enum KernelContent {
     DisplayData(DisplayDataContent),
     ExecuteResultContent(ExecuteResultContent),
     StatusContent(StatusContent),
+    StreamContent(StreamContent),
     ErrorContent(ErrorContent),
     ExecuteReplyContent(ExecuteReplyContent),
     ExecuteInputContent(ExecuteInputContent),

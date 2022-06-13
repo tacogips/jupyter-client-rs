@@ -320,8 +320,7 @@ pub async fn convert_error(response: reqwest::Response) -> Result<Option<reqwest
     }
 }
 
-//#[cfg(all(test, feature = "test_with_jupyter"))]
-#[cfg(all(test))]
+#[cfg(all(test, feature = "test_with_jupyter"))]
 mod test {
     use super::*;
     use serial_test::serial;
@@ -353,13 +352,18 @@ mod test {
         let kernsl_cli = client.new_kernel_client(&kernel).unwrap();
 
         let resp = kernsl_cli.run_code("12 * 32".into(), None).await.unwrap();
-        let contents = resp.as_content().unwrap();
-        if let Some(KernelContent::ExecuteResultContent(content)) = contents {
-            let expected = Data {
-                text_plain: Some("384".to_string()),
-                image_png: None,
-            };
-            assert_eq!(content.data, expected);
+
+        if let CompositeKernelResponses::SingleResponse(resp) = resp {
+            let contents = resp.as_content().unwrap();
+            if let Some(KernelContent::ExecuteResultContent(content)) = contents {
+                let expected = Data {
+                    text_plain: Some("384".to_string()),
+                    image_png: None,
+                };
+                assert_eq!(content.data, expected);
+            } else {
+                assert!(false);
+            }
         } else {
             assert!(false);
         }
@@ -386,10 +390,14 @@ mod test {
         let kernsl_cli = client.new_kernel_client(&kernel).unwrap();
 
         let resp = kernsl_cli.run_code("".into(), None).await.unwrap();
-        let contents = resp.as_content().unwrap();
-        println!("{:?}", contents);
-        if let Some(KernelContent::ExecuteReplyContent(content)) = contents {
-            assert_eq!(content.status, "ok".to_string());
+        if let CompositeKernelResponses::SingleResponse(resp) = resp {
+            let contents = resp.as_content().unwrap();
+            println!("{:?}", contents);
+            if let Some(KernelContent::ExecuteReplyContent(content)) = contents {
+                assert_eq!(content.status, "ok".to_string());
+            } else {
+                assert!(false);
+            }
         } else {
             assert!(false);
         }
