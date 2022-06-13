@@ -210,6 +210,23 @@ impl JupyterClient {
         Ok(())
     }
 
+    /// GET /api/kernels/{id}
+    pub async fn get_running_kernel(&self, kernel_id: &str) -> Result<Option<Kernel>> {
+        let request_builder = with_auth_header! {
+            self.credential,
+            self.req_client.get(format!(
+                "{base_url}/api/kernels/{kernel_id}",
+                base_url = self.base_url
+            ))
+        };
+
+        let resp = convert_error(request_builder.send().await?).await?;
+        match resp {
+            Some(found) => Ok(found.json().await?),
+            None => Ok(None),
+        }
+    }
+
     /// GET /api/kernels
     pub async fn get_running_kernels(&self) -> Result<Vec<Kernel>> {
         let request_builder = with_auth_header! {
