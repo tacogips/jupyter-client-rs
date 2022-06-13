@@ -38,12 +38,15 @@ async fn main() {
     println!("kernels:{kernels:?}");
     let kernel = kernels.iter().find(|each| each.name == "rust").unwrap();
     let kernsl_cli = client.new_kernel_client(&kernel).unwrap();
-    //let resp = kernsl_cli.run_code(":dep tokio".into(), None).await;
-    //println!("{resp:?}");
+    let resp = kernsl_cli.run_code(":dep tokio".into(), None).await;
+    println!("{resp:?}");
 
     let resp = kernsl_cli.run_code("12 * 32".into(), None).await;
     println!("{resp:?}");
 
     let resp = kernsl_cli.run_code("a12 * 23".into(), None).await;
     println!("error: {resp:?}");
+
+    let resp = kernsl_cli.run_code("".into(), None).await;
+    println!("{resp:?}");
 }

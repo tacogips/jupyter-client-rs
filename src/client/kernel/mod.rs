@@ -48,6 +48,15 @@ impl WaitResult for WaitResultAndDisplayData {
                     Duration::from_millis(DEFAULT_WAIT_SUCCESSION_RESULT_MILLI_SEC),
                 )))
             }
+            MessageType::ExecuteReply => {
+                if self.inner_latest_result.is_none() {
+                    self.inner_latest_result = Some(message);
+                }
+                Some(WaitResultResponse::WaitSuccession(sleep(
+                    Duration::from_millis(DEFAULT_WAIT_SUCCESSION_RESULT_MILLI_SEC),
+                )))
+            }
+
             MessageType::DisplayData | MessageType::Error => {
                 Some(WaitResultResponse::KernelResponse(message))
             }
@@ -121,6 +130,7 @@ impl KernelApiClient {
 
                  Some(receipt_message) = reader.next() =>{
                     log::debug!("receipt_message: {receipt_message:?}");
+
                     match receipt_message{
                         Ok(message) =>{
                             let resp: KernelResponse = match message{

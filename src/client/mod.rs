@@ -320,7 +320,8 @@ pub async fn convert_error(response: reqwest::Response) -> Result<Option<reqwest
     }
 }
 
-#[cfg(all(test, feature = "test_with_jupyter"))]
+//#[cfg(all(test, feature = "test_with_jupyter"))]
+#[cfg(all(test))]
 mod test {
     use super::*;
     use serial_test::serial;
@@ -338,12 +339,6 @@ mod test {
     #[serial]
     async fn run_cmd() {
         let client = JupyterClient::new(TEST_JUPYTER_URL, None, None).unwrap();
-        let result = client.get_running_kernels().await.unwrap();
-        if result.is_empty() {
-            for each in result {
-                client.interrupt_kernel(&each.id).await.unwrap();
-            }
-        }
 
         let result = client.get_kernel_specs().await.unwrap();
         let rust = result.kernelspecs.get("rust").unwrap();
@@ -351,7 +346,7 @@ mod test {
             name: rust.name.to_string(),
             path: None,
         };
-        client.start_kernel(start_req).await.unwrap();
+        let start_kernel = client.start_kernel(start_req).await.unwrap();
 
         let kernels = client.get_running_kernels().await.unwrap();
         let kernel = kernels.iter().find(|each| each.name == "rust").unwrap();
@@ -368,5 +363,38 @@ mod test {
         } else {
             assert!(false);
         }
+
+        client.interrupt_kernel(&start_kernel.id).await.unwrap();
+        client.delete_kernel(&start_kernel.id).await.unwrap();
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn run_empty_cmd() {
+        let client = JupyterClient::new(TEST_JUPYTER_URL, None, None).unwrap();
+
+        let result = client.get_kernel_specs().await.unwrap();
+        let rust = result.kernelspecs.get("rust").unwrap();
+        let start_req = KernelPostRequest {
+            name: rust.name.to_string(),
+            path: None,
+        };
+        let start_kernel = client.start_kernel(start_req).await.unwrap();
+
+        let kernels = client.get_running_kernels().await.unwrap();
+        let kernel = kernels.iter().find(|each| each.name == "rust").unwrap();
+        let kernsl_cli = client.new_kernel_client(&kernel).unwrap();
+
+        let resp = kernsl_cli.run_code("".into(), None).await.unwrap();
+        let contents = resp.as_content().unwrap();
+        println!("{:?}", contents);
+        if let Some(KernelContent::ExecuteReplyContent(content)) = contents {
+            assert_eq!(content.status, "ok".to_string());
+        } else {
+            assert!(false);
+        }
+
+        client.interrupt_kernel(&start_kernel.id).await.unwrap();
+        client.delete_kernel(&start_kernel.id).await.unwrap();
     }
 }
